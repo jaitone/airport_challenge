@@ -1,4 +1,5 @@
 require 'airport'
+
 describe Airport do
 
   it { is_expected.to respond_to(:land).with(1).argument }
@@ -7,36 +8,48 @@ describe Airport do
   it 'has a hangar capacity' do
     expect(subject.hangar).to eq Airport::DEFAULT_CAPACITY
   end
-  describe 'initialization' do
-    it 'has a variable hangar' do
-   airport = Airport.new(20)
-   20.times { airport.land Plane.new }
-    expect{ airport.land Plane.new }.to raise_error 'Airport full'
+
+  describe '#initialize' do
+
+    it "creates a new airport" do
+      expect(Airport.new).to be_a(Airport)
     end
+
   end
   
   describe '#land' do
+
     it 'lands a plane' do
-    plane = Plane.new
-    expect(subject.land(plane)).to eq plane
+      plane = double("plane", :flying? => true)
+      subject.land(plane)
+      expect(subject.planes.last).to eq plane
     end
-    it 'raises an error when full' do
-    subject.hangar.times { subject.land(Plane.new) }
-    expect { subject.land Plane.new }.to raise_error 'Airport is full'
+
+    it "only lands things that are currently flying" do
+      plane = double("plane", :flying? => false)
+      expect{ subject.land(plane) }.to raise_error "Can't land this, it's not flying"
     end
-    
-    it Airport::DEFAULT_CAPACITY.times do
-    subject.land Plane.new
+
+    it 'raises an error when airport full' do
+      subject.hangar.times { subject.land(Plane.new) }
+      expect { subject.land Plane.new }.to raise_error 'Airport is full'
     end
+
   end
   
   describe '#take_off' do
-    it 'A plane takes off' do
+
+    it 'makes a plane take off' do
       plane = Plane.new
       subject.land(plane)
       # a plane is taking off
       expect(subject.take_off).to eq plane
-      expect { subject.take_off }.to raise_error 'No planes taking off'
     end
+
+    it "raises an error when airport is empty" do
+      expect { subject.take_off }.to raise_error "No planes, can't take off"
+    end
+
   end
+
 end
